@@ -20,6 +20,9 @@ from nltk.corpus import stopwords, wordnet
 import urllib.parse
 from urllib.parse import urlparse
 
+import re
+from collections import defaultdict
+
 # NLTK resources
 nltk.download('punkt')
 nltk.download('stopwords')
@@ -60,7 +63,11 @@ def identify_dei_phrases(text, dei_phrases):
         # input("Enter to continue")
 
         if phrase in ' '.join(filtered_tokens):
-            found_phrases.append(phrase)
+
+            count = ' '.join(filtered_tokens).count(phrase)
+            #print (f"DEI-related phrase found: {phrase} | Count: {count}")
+            
+            found_phrases.append(phrase + " (" + str(count) + ")")
     
     return found_phrases
 
@@ -147,6 +154,23 @@ def crawl_website(url, visited=set(), dei_phrases=[]):
 
     return found_phrases
 
+# Function to combine word counts
+def combine_word_counts(paragraphs):
+    # Use a regular expression to find all occurrences of the pattern "word (count)"
+    pattern = re.compile(r'(\w+)\s\((\d+)\)')
+    
+    # Use a dictionary to store the combined counts
+    word_counts = defaultdict(int)
+    
+    for paragraph in paragraphs:
+        matches = pattern.findall(paragraph)
+        for word, count in matches:
+            word_counts[word] += int(count)
+    
+    # Format the output
+    result = [f"{word} ({count})" for word, count in word_counts.items()]
+    return "; ".join(result)
+
 # Main function to execute the process
 def main():
     url = input("Enter the website URL: ")
@@ -164,8 +188,12 @@ def main():
 
     if found_phrases:
         print("\nKey DEI-related phrases found that may violate Executive Order 14173:")
-        for phrase in set(found_phrases):  # Using set to avoid duplicates
-            print(f"- {phrase}")
+        '''
+            for phrase in set(found_phrases):  # Using set to avoid duplicates
+            print(f"- {phrase}")'
+        '''
+        combined_counts = combine_word_counts(found_phrases)
+        print(combined_counts)
     else:
         print("No DEI-related phrases found that may violate Executive Order 14173.")
 
