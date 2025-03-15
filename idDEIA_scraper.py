@@ -113,7 +113,7 @@ def is_desirable_url(url):
     undesirable_extensions = ['.pdf', '.mp4', '.mov', '.avi', '.js', '.css', '.jpeg', '.jpg', '.png', '.gif', '.webm', 'xml', 'json', 'ppt', 'pptx', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'zip', 'rar', 'tar', 'gz', '7z', 'exe', 'bin', 'dmg', 'iso', 'apk', 'deb', 'rpm', 'torrent', 'woff', 'woff2', 'ttf', 'otf', 'eot', 'svg', 'ico', 'mp3', 'wav', 'flac', 'ogg', 'wma', 'aac', 'm4a', 'opus', 'mid', 'midi', 'kar', 'webp', 'bmp', 'tiff', 'tif', 'eps', 'svgz', '3gp', '3g2', 'mkv', 'webm', 'flv', 'vob', 'ogv', 'ogg', 'drc', 'gifv', 'mng', 'avi', 'mov', 'qt', 'wmv', 'yuv', 'rm', 'rmvb', 'asf', 'amv', 'mpg', 'mp2', 'mpeg', 'mpe', 'mpv', 'mpg', 'mpeg', 'm2v', 'm4v', 'svi', '3gp', '3g2', 'mxf', 'roq', 'nsv', 'flv', 'f4v', 'f4p', 'f4a', 'f4b']
     return not any(url.endswith(ext) for ext in undesirable_extensions)
 
-# Function to check if the URL is a bookmark link (i.e., starts with '#')
+# Function to check if the URL is a bookmark link (i.e., containing '#')
 def is_bookmark_link(url):
     #return url.startswith('#')
     return '#' in url
@@ -154,7 +154,7 @@ def crawl_website(url, visited=set(), dei_phrases=[]):
 
     return found_phrases
 
-# Function to combine word counts
+# Function to combine word counts -- helped by Copilot 
 def combine_word_counts(paragraphs):
     # Use a regular expression to find all occurrences of the pattern "word (count)"
     pattern = re.compile(r'(\w+)\s\((\d+)\)')
@@ -183,12 +183,11 @@ def main():
     input("Enter to continue")
     '''
 
-    #found_phrases = crawl_website(url)
     found_phrases = crawl_website(url, dei_phrases=dei_phrases)
 
     if found_phrases:
-        print("\nKey DEI-related phrases found that may violate Executive Order 14173:")
-        '''
+        print("\n\nKey DEI-related phrases found that may violate Executive Order 14173:")
+        ''' this was before I added counting of macthed phrases
             for phrase in set(found_phrases):  # Using set to avoid duplicates
             print(f"- {phrase}")'
         '''
