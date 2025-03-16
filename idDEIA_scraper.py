@@ -71,7 +71,7 @@ def identify_dei_phrases(text, dei_phrases):
     
     return found_phrases
 
-# Function to get synonyms for DEI-related terms from WordNet
+# Function with the option to get synonyms for DEI-related terms from WordNet
 def get_dei_phrases(gen_synonyms=False):
 
     dei_terms = [
@@ -186,7 +186,7 @@ def main():
     found_phrases = crawl_website(url, dei_phrases=dei_phrases)
 
     if found_phrases:
-        print("\n\nKey DEI-related phrases found that may violate Executive Order 14173:")
+        print("\n======\nKey DEI-related phrases found that may violate Executive Order 14173:")
         ''' this was before I added counting of macthed phrases
             for phrase in set(found_phrases):  # Using set to avoid duplicates
             print(f"- {phrase}")'
