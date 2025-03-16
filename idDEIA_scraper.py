@@ -120,9 +120,6 @@ def get_dei_phrases(gen_synonyms=False):
     ]
 
     deia_terms = sorted(list(set(term.lower() for term in core_deia_terms)))  # Remove duplicates and sort;
-    print (f"\nStatic list of defined DEIA terms: {deia_terms} \n")
-    input("Max Tsai: Enter to continue...")
-    print ("\n*********************************\n")
 
     if gen_synonyms:    
         dei_wordphrases = set(deia_terms)  # Start with the core terms
@@ -133,7 +130,12 @@ def get_dei_phrases(gen_synonyms=False):
                 for lemma in syn.lemmas():
                     dei_wordphrases.add(lemma.name().lower())
     else:
-        dei_wordphrases = [word.lower() for word in deia_terms]
+        #dei_wordphrases = [word.lower() for word in deia_terms]
+        dei_wordphrases = deia_terms
+
+    print (f"\n List of defined DEIA terms gen_synonyms is {gen_synonyms}: \n{dei_wordphrases} \n")
+    input("Max Tsai: Enter to continue...")
+    print ("\n*********************************\n")
 
     return list(dei_wordphrases)
 
@@ -215,7 +217,7 @@ def main():
     else:
         print(f"Scanning website: {url}")
 
-    dei_phrases = get_dei_phrases(False)    #True for Synonyms
+    dei_phrases = get_dei_phrases(True)    #True for Synonyms
 
     # Crawl the website and identify DEI-related phrases
     found_phrases = crawl_website(url, dei_phrases=dei_phrases)
