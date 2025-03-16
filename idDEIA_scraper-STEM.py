@@ -1,4 +1,5 @@
 """
+WORK IN PROGRESS - NOT YET FUNCTIONAL
 ------------------------------------------------------
 Project Name: DEIA Compliance Scanner
 Author: Max J. Tsai
@@ -13,7 +14,6 @@ similar to other open-source software. Contributions and feedback are welcome.
 """
 from dotenv import load_dotenv
 import os
-import ast
 
 import requests
 from bs4 import BeautifulSoup
@@ -21,6 +21,8 @@ from bs4 import BeautifulSoup
 import nltk
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords, wordnet
+
+from nltk.stem import PorterStemmer, WordNetLemmatizer
 
 import urllib.parse
 from urllib.parse import urlparse
@@ -34,6 +36,8 @@ nltk.download('stopwords')
 nltk.download('wordnet') #Synonym
 nltk.download('punkt_tab')
 
+stemmer = PorterStemmer()
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -43,17 +47,8 @@ def fetch_website_content(url):
         response = requests.get(url)
         response.raise_for_status()  # Check if the request was successful
         soup = BeautifulSoup(response.content, 'html.parser')
-
-        # Load sections to exclude from .env file
-        exclude_sections_str = os.getenv('EXCLUDE_SECTIONS')
-        if exclude_sections_str:
-            exclude_sections = ast.literal_eval(exclude_sections_str)
-            # Remove specified sections
-            for section in exclude_sections:
-                for tag in soup.find_all(section):
-                    tag.decompose()
-
-        ''' #TESTING: ONLY extract <p> tags
+        
+        ''' ONLY extract <p> tags
         paragraphs = soup.find_all('p')  # Extract all paragraphs        
         text = ' '.join([para.get_text() for para in paragraphs])
         '''
@@ -75,7 +70,18 @@ def identify_dei_phrases(text, dei_phrases):
     # Find matching phrases
     found_phrases = []
 
+    token_stem = stemmer.stem(filtered_tokens)
+    for token in filtered_tokens:
+        if token in dei_phrases:
+            found_phrases.append(token)
+    print (found_phrases)
+
+    '''
+    found_phrases = []
     for phrase in dei_phrases:
+        # print (phrase)
+        # print (filtered_tokens)
+        # input("Enter to continue")
 
         if phrase in ' '.join(filtered_tokens):
 
@@ -83,46 +89,44 @@ def identify_dei_phrases(text, dei_phrases):
             #print (f"DEI-related phrase found: {phrase} | Count: {count}")
             
             found_phrases.append(phrase + " (" + str(count) + ")")
+    '''
     
     return found_phrases
 
 # Function with the option to get synonyms for DEI-related terms from WordNet
 def get_dei_phrases(gen_synonyms=False):
 
-    # Top DEIA terms and their variations
     core_deia_terms = [
-
-        # Top DEIA terms and their variations
-        "diversity", "diverse", "diversify", "diversification",
-        "equity", "equitable", "equitably", "equity-based",
-        "inclusion", "inclusive", "inclusivity", "inclusively",
-        "accessibility", "accessible", "accessibly",
-        "discrimination", "discriminatory", "discriminate", "discriminating",
-        "bias", "biased", "biasing", "biasness", "bias-free",
-        "racism", "racist", "racial",
-    
-        # Diversity
-        "Multicultural", "Heterogeneity", "Representation", "Pluralism", "Inclusion", "Difference", 
-        "Variety", "Intersectionality", "Demographic", "Background", "Identity", "Cultural awareness",
-        
-        # Equity
-        "Fairness", "Justice", "Equality", "Impartiality", "Redistribution", "Inclusive", "Equitable",
-        "Equal opportunity", "Accessibility", "Affirmative action", "Accountability", "Non-discrimination", 
-        "Redistribution of resources",
-        
-        # Inclusion
-        "Belonging", "Acceptance", "Empowerment", "Unity", "Respect", "Open-mindedness", "Welcoming",
-        
-        # Accessibility
-        "Usability", "Adaptability", "Availability", "Accommodation", "Universal design", "Equal access", 
-        "Barrier-free", "Disability inclusion", "Access rights", "Accessibility tools", "Assistive technology", 
-        "Access for all"
+    "diversity", "equity", "inclusion", "accessibility", "affirmative action",
+    "bias", "cultural competence", "disparity", "discrimination", "equal opportunity",
+    "underrepresented", "inclusionary", "merit", "minority", "preference",
+    "protected class", "quota", "race", "sex", "inequality", "training",
+    "workforce balancing"
     ]
 
-    deia_terms = sorted(list(set(term.lower() for term in core_deia_terms)))  # Remove duplicates and sort;
-    print (f"\nStatic list of defined DEIA terms: {deia_terms} \n")
-    input("Max Tsai: Enter to continue...")
-    print ("\n*********************************\n")
+    deia_terms = sorted(list(set(core_deia_terms)))  # Remove duplicates and sort;
+
+    '''
+    #LOADED VERSION 
+    deia_terms = [
+    # Diversity
+    "Multicultural", "Heterogeneity", "Representation", "Pluralism", "Inclusion", "Difference", 
+    "Variety", "Intersectionality", "Demographic", "Background", "Identity", "Cultural awareness",
+    
+    # Equity
+    "Fairness", "Justice", "Equality", "Impartiality", "Redistribution", "Inclusiveness", 
+    "Equal opportunity", "Accessibility", "Affirmative action", "Accountability", "Non-discrimination", 
+    "Redistribution of resources",
+    
+    # Inclusion
+    "Belonging", "Engagement", "Participation", "Integration", "Involvement", "Acceptance", 
+    "Empowerment", "Community", "Unity", "Respect", "Open-mindedness", "Welcoming",
+    
+    # Accessibility
+    "Usability", "Adaptability", "Availability", "Accommodation", "Universal design", "Equal access", 
+    "Barrier-free", "Disability inclusion", "Access rights", "Accessibility tools", "Assistive technology", 
+    "Access for all"
+    ]'''
 
     if gen_synonyms:    
         dei_wordphrases = set(deia_terms)  # Start with the core terms
@@ -161,7 +165,6 @@ def crawl_website(url, visited=set(), dei_phrases=[]):
 
             # Fetch the content of the current page
             text, soup = fetch_website_content(current_url)
-
             if text:
                 # Identify DEI phrases on the current page
                 dei_phrases_found = identify_dei_phrases(text, dei_phrases)
@@ -207,18 +210,21 @@ def main():
 
     url = os.getenv("URL")
     if not url:
-        print (f"\n================================================")
-        print (f"==     DEIA Compliance Scanner | Max Tsai     ==")
-        print (f"================================================\n")
-
         url = input("Enter the website URL: ")
     else:
         print(f"Scanning website: {url}")
 
     dei_phrases = get_dei_phrases(False)    #True for Synonyms
 
-    # Crawl the website and identify DEI-related phrases
+    # Stemming the DEI phrases - PorterStemmer
+    core_stems = {stemmer.stem(term) for term in dei_phrases}
+    
+    '''print (dei_phrases)
+    print ("\n\n",core_stems)
+    input("Enter to continue")'''
+    
     found_phrases = crawl_website(url, dei_phrases=dei_phrases)
+    #found_phrases = crawl_website(url, dei_phrases=core_stems)
 
     if found_phrases:
         print("\n======\nKey DEI-related phrases found that may violate Executive Order 14173:")

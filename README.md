@@ -13,7 +13,13 @@ This Python program scans webpages for Diversity, Equity, Inclusion, and Accessi
 
 ## 📌 Features  
 ✔ Scrapes webpage content using **BeautifulSoup**  
-✔ Tokenizes and matches DEIA terms and their synonyms  
+```python
+    - adding option to exluse sections, i.e. <footer>
+```
+✔ Tokenizes and matches DEIA terms and their synonyms  4
+```python
+    - to-do: STEM for matching; staCy does not work with Python 3.13 (anyone can help?)
+```
 ✔ Displays URLs with the count of DEIA-related term occurrences  
 
 ## 🛠️ Installation  
